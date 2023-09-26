@@ -15,6 +15,7 @@ public record CadastroPessoaJuridica(
         @NotBlank(message = "Campo CNPJ é obrigatório")
         @CNPJ
         @Size(max = 14)
+        @Pattern(regexp = "\\d{14}", message = "Campo cnpj deve ter 14 caracteres")
         String cnpj,
 
         @NotBlank(message = "Campo Razão Social é obrigatório")

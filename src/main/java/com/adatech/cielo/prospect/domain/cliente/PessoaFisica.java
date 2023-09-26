@@ -48,7 +48,7 @@ public non-sealed class PessoaFisica extends Cliente{
         this.setMcc(dados.mcc());
         this.setCpf(dados.cpf());
         this.nomePessoa = dados.nomePessoa();
-        this.emailPessoa = dados.nomePessoa();
+        this.emailPessoa = dados.emailPessoa();
     }
 
 }

@@ -1,7 +1,9 @@
 package com.adatech.cielo.prospect.domain.cliente.pessoajuridica;
 
+import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
 import com.adatech.cielo.prospect.domain.cliente.PessoaJuridica;
 import com.adatech.cielo.prospect.infra.exception.PessoaJuridicaException;
+import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,15 +14,20 @@ import java.util.UUID;
 public class PessoaJuridicaService {
 
     private final PessoaJuridicaRepository repository;
+    private final DadosCadastroClienteQueue dadosQueue;
 
-    public PessoaJuridicaService(PessoaJuridicaRepository repository) {
+    public PessoaJuridicaService(PessoaJuridicaRepository repository, DadosCadastroClienteQueue dadosQueue) {
         this.repository = repository;
+        this.dadosQueue = dadosQueue;
     }
 
     public PessoaJuridica cadastrar(CadastroPessoaJuridica dados){
         var pessoaJuridica = new PessoaJuridica(dados);
         validaSePessoaJuridicaEhCadastrada(dados.cnpj());
-        return repository.save(pessoaJuridica);
+        pessoaJuridica = this.repository.save(pessoaJuridica);
+        dadosQueue.enqueue(new DadosCadastroCliente(pessoaJuridica));
+        System.out.println("Cliente incluído na fila para atendimento "+dadosQueue.toString());
+        return pessoaJuridica;
     }
 
     public void validaSePessoaJuridicaEhCadastrada(String cnpj){
@@ -65,4 +72,5 @@ public class PessoaJuridicaService {
         }
         this.repository.delete(pessoa);
     }
+
 }

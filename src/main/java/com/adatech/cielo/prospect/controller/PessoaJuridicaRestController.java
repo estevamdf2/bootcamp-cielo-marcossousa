@@ -1,10 +1,10 @@
 package com.adatech.cielo.prospect.controller;
 
-import com.adatech.cielo.prospect.domain.cliente.PessoaJuridica;
 import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.CadastroPessoaJuridica;
 import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.ListagemPessoaJuridica;
 import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.PessoaJuridicaService;
 
+import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

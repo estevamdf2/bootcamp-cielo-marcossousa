@@ -18,7 +18,6 @@ import java.util.UUID;
 @MappedSuperclass
 public sealed abstract class Cliente permits PessoaFisica, PessoaJuridica {
 
-
     private UUID uuid;
 
     @Column

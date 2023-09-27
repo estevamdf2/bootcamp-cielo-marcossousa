@@ -1,11 +1,10 @@
 package com.adatech.cielo.prospect.domain.cliente.pessoafisica;
 
+import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
 import com.adatech.cielo.prospect.domain.cliente.PessoaFisica;
-import com.adatech.cielo.prospect.domain.cliente.PessoaJuridica;
-import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.CadastroPessoaJuridica;
-import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.ListagemPessoaJuridica;
 import com.adatech.cielo.prospect.infra.exception.PessoaFisicaException;
-import com.adatech.cielo.prospect.infra.exception.PessoaJuridicaException;
+import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,15 +14,20 @@ import java.util.UUID;
 @Service
 public class PessoaFisicaService {
     private final PessoaFisicaRepository repository;
+    private DadosCadastroClienteQueue dadosQueue;
 
-    public PessoaFisicaService(PessoaFisicaRepository repository) {
+    public PessoaFisicaService(PessoaFisicaRepository repository, DadosCadastroClienteQueue dadosQueue) {
         this.repository = repository;
+        this.dadosQueue = dadosQueue;
     }
 
     public PessoaFisica cadastrar(CadastroPessoaFisica dados){
         var pessoaFisica = new PessoaFisica(dados);
         validaSePessoaFisicaEhCadastrada(dados.cpf());
-        return repository.save(pessoaFisica);
+        pessoaFisica = repository.save(pessoaFisica);
+        dadosQueue.enqueue(new DadosCadastroCliente(pessoaFisica));
+        System.out.println("Cliente incluído na fila para atendimento "+dadosQueue.toString());
+        return pessoaFisica;
     }
 
     public void validaSePessoaFisicaEhCadastrada(String cpf){

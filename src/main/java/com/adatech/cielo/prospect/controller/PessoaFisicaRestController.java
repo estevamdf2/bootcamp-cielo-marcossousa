@@ -3,6 +3,7 @@ package com.adatech.cielo.prospect.controller;
 import com.adatech.cielo.prospect.domain.cliente.pessoafisica.CadastroPessoaFisica;
 import com.adatech.cielo.prospect.domain.cliente.pessoafisica.ListagemPessoaFisica;
 import com.adatech.cielo.prospect.domain.cliente.pessoafisica.PessoaFisicaService;
+import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

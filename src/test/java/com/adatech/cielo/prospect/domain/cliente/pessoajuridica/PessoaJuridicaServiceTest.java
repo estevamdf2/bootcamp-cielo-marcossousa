@@ -8,6 +8,7 @@ import com.adatech.cielo.prospect.domain.cliente.pessoafisica.PessoaFisicaReposi
 import com.adatech.cielo.prospect.domain.cliente.pessoafisica.PessoaFisicaService;
 import com.adatech.cielo.prospect.infra.exception.PessoaFisicaException;
 import com.adatech.cielo.prospect.infra.exception.PessoaJuridicaException;
+import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,10 +31,12 @@ class PessoaJuridicaServiceTest {
 
     private PessoaJuridicaService service;
 
+    private DadosCadastroClienteQueue dadosQueue;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        service = new PessoaJuridicaService(repository);
+        service = new PessoaJuridicaService(repository,dadosQueue);
     }
 
     @Test

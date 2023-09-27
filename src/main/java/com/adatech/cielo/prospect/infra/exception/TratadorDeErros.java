@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.NoSuchElementException;
+
 @RestControllerAdvice
 public class TratadorDeErros {
 
@@ -40,6 +42,11 @@ public class TratadorDeErros {
 
     @ExceptionHandler(PessoaFisicaException.class)
     public ResponseEntity<String> handlePessoaFisicaException(PessoaFisicaException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<String> handleRetirarClienteFilaException(NoSuchElementException e){
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 

@@ -6,6 +6,7 @@ import com.adatech.cielo.prospect.infra.exception.PessoaJuridicaException;
 import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +53,7 @@ public class PessoaJuridicaService {
         var pessoaJuridica = this.repository.getReferenceByCnpj(dados.cnpj());
         pessoaJuridicaNaoDeveSerCadastrada(dados.cnpj());
         pessoaJuridica.atualizarPessoaJuridica(dados, pessoaJuridica);
+        dadosQueue.atualizar(new DadosCadastroCliente(pessoaJuridica));
 
 
         return this.repository.save(pessoaJuridica);

@@ -52,6 +52,7 @@ public class PessoaFisicaService {
         var pessoaFisica = this.repository.getReferenceByCpf(dados.cpf());
         pessoaFisicaNaoDeveSerCadastrada(dados.cpf());
         pessoaFisica.atualizarPessoaFisica(dados, pessoaFisica);
+        dadosQueue.atualizar(new DadosCadastroCliente(pessoaFisica));
         return this.repository.save(pessoaFisica);
     }
 

@@ -79,4 +79,17 @@ public class DadosCadastroClienteQueue implements Queue<DadosCadastroCliente>{
         capacidade *= 2;
         elementos = Arrays.copyOf(elementos, capacidade);
     }
+
+    public void atualizar(DadosCadastroCliente dadosCadastroCliente) {
+        for (int i=0; i <elementos.length; i++){
+            DadosCadastroCliente dadoArray = (DadosCadastroCliente) elementos[i];
+            if(dadoArray.uuid().toString().equals(dadosCadastroCliente.uuid().toString())){
+              for (int j = i; j < tamanho -1; j++) {
+                  elementos[j] = elementos[j + 1];
+              }
+               elementos[tamanho -1] = dadosCadastroCliente;
+               return;
+            }
+        }
+    }
 }

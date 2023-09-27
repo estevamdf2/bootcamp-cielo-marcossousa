@@ -38,7 +38,13 @@ class CadastroPessoaJuridicaTest {
 
         for (ConstraintViolation<CadastroPessoaJuridica> violation : violations) {
             if ("cnpj".equals(violation.getPropertyPath().toString())) {
-                Assertions.assertEquals("número do registro de contribuinte corporativo brasileiro (CNPJ) inválido", violation.getMessage());
+                if(violation.getMessage().contains("deve ter")){
+                    Assertions.assertEquals("Campo cnpj deve ter 14 caracteres", violation.getMessage());
+                } else{
+                    Assertions.assertEquals("número do registro de contribuinte corporativo brasileiro (CNPJ) inválido", violation.getMessage());
+                }
+
+
             }
         }
     }

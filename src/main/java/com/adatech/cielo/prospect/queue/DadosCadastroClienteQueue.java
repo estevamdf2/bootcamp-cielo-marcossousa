@@ -67,7 +67,7 @@ public class DadosCadastroClienteQueue implements Queue<DadosCadastroCliente>{
 
     @Override
     public boolean isFull() {
-        return false;
+        return tamanho > TAMANHO_INICIAL;
     }
 
     @Override

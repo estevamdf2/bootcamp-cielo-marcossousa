@@ -31,6 +31,7 @@ class PessoaJuridicaServiceTest {
 
     private PessoaJuridicaService service;
 
+    @Mock
     private DadosCadastroClienteQueue dadosQueue;
 
     @BeforeEach

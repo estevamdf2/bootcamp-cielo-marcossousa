@@ -4,6 +4,16 @@
 
 Repositório do candidato Marcos Sousa cujo objetivo e mostrar aos avaliadores os desafios solicitados implementados.
 
+* [Aplicação](#aplicação)
+* [Desafios](#desafios)
+* [Desafio 1](#desafio-1)
+* [Desafio 2](#desafio-2)
+* [Desafio 3](#desafio-3)
+* [Desafio 4](#desafio-4)
+
+
+## Aplicação
+
 ## Desafios
 
 ### Desafio 1 
@@ -11,7 +21,9 @@ modelar uma API REST com operações que possibilitem a **criação, alteração
 exclusão e consulta** de pré-cadastros de clientes. O entregável deverá ser um
 documento **swagger**.
 
+
 ### Desafio 2
+
 a) incluir na API criada no desafio “1” uma nova operação que possibilite a **retirada do
 próximo cliente** da fila de atendimento e retorne os dados disponíveis:
 
@@ -105,5 +117,24 @@ Ao chamar novamente o endpoint `GET /clientes` teremos somente dois clientes na 
 
 ![Resposta endpoint get /clientes após retirar cliente](docs/imagens/4-get-clientes-apos-retirada.PNG "Resposta endpoint GET /clientes após alterar cliente")
 
+### Desafio 3
 
+_Desenhe e implemente uma nova solução para a fila de atendimento, utilizando a
+solução de mensageria SQS da AWS._
 
+Implementado junto a aplicação um serviço que se comunica com a Amazon SQS cujo objetivo e gerenciar a fila de atendimento de novos clientes cadastrados no **Prospect clientes**.
+
+Segue abaixo o desenho da arquitetura para o atendimento do desafio.
+
+![Arquitetura Amazon SQS](docs/imagens/5-arquitetura-desafio3.png "Arquitetura Amazon SQS")
+
+### Desafio 4
+
+_a) identifique um débito técnico de Segurança da Informação na aplicação;_
+
+_b) detalhe o débito técnico identificado, informando a criticidade e possíveis
+consequências;_
+
+_c) planeje as atividades técnicas para o desenvolvimento da solução;_
+
+_d) implemente a solução._

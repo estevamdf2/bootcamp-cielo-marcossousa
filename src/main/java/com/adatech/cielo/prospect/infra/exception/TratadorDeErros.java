@@ -1,6 +1,7 @@
 package com.adatech.cielo.prospect.infra.exception;
 
 import com.adatech.cielo.prospect.domain.cliente.ValidacaoException;
+import com.amazonaws.services.sqs.model.AmazonSQSException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -47,6 +48,11 @@ public class TratadorDeErros {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleRetirarClienteFilaException(NoSuchElementException e){
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(AmazonSQSException.class)
+    public ResponseEntity<String> handleAmazonSQSException(AmazonSQSException e){
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 

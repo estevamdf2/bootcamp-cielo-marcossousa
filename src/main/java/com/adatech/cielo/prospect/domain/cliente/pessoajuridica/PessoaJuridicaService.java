@@ -37,7 +37,7 @@ public class PessoaJuridicaService {
 
     private void enviarClienteAmazonSQS(DadosCadastroCliente dadosCadastroCliente) {
         this.amazonService.enviarMensagem(dadosCadastroCliente);
-        System.out.println("Cliente enviado para AWS SQS "+ dadosCadastroCliente.toString());
+        System.out.println("Cliente incluído na fila AWS SQS para atendimento "+ dadosCadastroCliente.toString());
     }
 
     private void enviarClienteFilaAplicacao(DadosCadastroCliente dadosCadastroCliente) {

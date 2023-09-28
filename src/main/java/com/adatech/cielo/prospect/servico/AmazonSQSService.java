@@ -7,15 +7,16 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import software.amazon.awssdk.services.sqs.model.SqsException;
 
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class AmazonSQSService {
@@ -32,6 +33,10 @@ public class AmazonSQSService {
     @Value("${spring.cloud.aws.credentials.secret-key}")
     private String secretKey;
 
+    private String GROUP_NAME="cielo-group";
+
+    private final int NOVO_TEMPO_VISIBILIDADE=3600;
+
     @Autowired
     private DadosCadastroClienteDeserializer dadosDeserializer;
 
@@ -45,18 +50,21 @@ public class AmazonSQSService {
         return sqs;
     }
 
-    public List<DadosCadastroCliente> listarMensagens(){
+    public List<Message> listarMensagens(){
         AmazonSQS sqsClient = getClient();
-        List<Message> messages = sqsClient.receiveMessage(queueUrl).getMessages();
-        return dadosDeserializer.deserealizaObjeto(messages);
+        return sqsClient.receiveMessage(queueUrl).getMessages();
+    }
+
+    public List<DadosCadastroCliente> listarClientes(){
+        return dadosDeserializer.deserealizaObjetos(listarMensagens());
     }
     public void enviarMensagem(DadosCadastroCliente dados){
         AmazonSQS sqsClient = getClient();
         try {
             SendMessageRequest sendMsgRequest = new SendMessageRequest()
                     .withQueueUrl(queueUrl)
-                    .withMessageGroupId("cielo-group")
-                    .withMessageDeduplicationId("cielo-group")
+                    .withMessageGroupId(GROUP_NAME)
+                    .withMessageDeduplicationId(GROUP_NAME)
                     .withMessageBody(dados.toJson());
 
             sqsClient.sendMessage(sendMsgRequest);
@@ -64,4 +72,44 @@ public class AmazonSQSService {
             e.getStackTrace();
         }
     }
+
+    public DadosCadastroCliente retirarCliente() {
+        AmazonSQS sqsClient = getClient();
+        List<Message> messages = listarMensagens();
+        DadosCadastroCliente cadastroCliente = null;
+        Message message = null;
+
+            try {
+                message = messages.stream().findFirst().get();
+                cadastroCliente = dadosDeserializer.deserealizaObjeto(message);
+                DeleteMessageResult messageResult = sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
+                System.out.println("Cliente " + cadastroCliente.toString() + " removido da fila Amazon SQS " + messageResult.toString());
+
+            } catch (NoSuchElementException e){
+                throw new NoSuchElementException("Fila vazia e/ou erro ao obter clientes da fila Amazon SQS. Tente novamente.");
+
+            } catch (AmazonSQSException e){
+                    renovarReceiptHandle(queueUrl, message, NOVO_TEMPO_VISIBILIDADE);
+                    retirarCliente();
+                throw new AmazonSQSException("Falha ao remover cliente da fila da Amazon SQS "+e.getMessage());
+            } catch (Exception e){
+                throw new RuntimeException("Fila vazia ou erro na aplicação - Amazon SQS. Tente novamente.");
+            }
+            return cadastroCliente;
+        }
+
+    public void renovarReceiptHandle(String queueUrl, Message message, int novoTempoVisibilidade) {
+        AmazonSQS sqsClient = getClient();
+
+        String receiptHandle = message.getReceiptHandle();
+
+        // renova o receipt handle
+        ChangeMessageVisibilityRequest request = new ChangeMessageVisibilityRequest()
+                .withQueueUrl(queueUrl)
+                .withReceiptHandle(receiptHandle)
+                .withVisibilityTimeout(novoTempoVisibilidade);
+
+        sqsClient.changeMessageVisibility(request);
+    }
+
 }

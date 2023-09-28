@@ -26,6 +26,7 @@ class PessoaJuridicaServiceTest {
 
     private PessoaJuridicaService service;
 
+    @Mock
     private AmazonSQSService amazonService;
 
     @Mock

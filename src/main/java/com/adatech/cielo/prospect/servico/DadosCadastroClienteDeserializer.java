@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class DadosCadastroClienteDeserializer {
 
-    public List<DadosCadastroCliente> deserealizaObjeto(List<Message> messages){
+    public List<DadosCadastroCliente> deserealizaObjetos(List<Message> messages){
         List<DadosCadastroCliente> clientes = new ArrayList<>();
         try {
              clientes = messages.stream().map(m -> criaObjeto(m)).toList();
@@ -20,6 +20,16 @@ public class DadosCadastroClienteDeserializer {
             e.printStackTrace();
         }
         return clientes;
+    }
+
+    public DadosCadastroCliente deserealizaObjeto(Message message){
+        DadosCadastroCliente cliente = new DadosCadastroCliente();
+        try {
+            cliente = criaObjeto(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cliente;
     }
 
     private DadosCadastroCliente criaObjeto(Message m) {

@@ -2,8 +2,6 @@ package com.adatech.cielo.prospect.controller;
 
 import com.adatech.cielo.prospect.domain.cliente.ClienteService;
 import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
-import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.PessoaJuridicaService;
-import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

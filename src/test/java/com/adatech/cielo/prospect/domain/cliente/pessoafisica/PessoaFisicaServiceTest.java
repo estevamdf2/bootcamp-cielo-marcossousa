@@ -3,6 +3,7 @@ package com.adatech.cielo.prospect.domain.cliente.pessoafisica;
 import com.adatech.cielo.prospect.domain.cliente.PessoaFisica;
 import com.adatech.cielo.prospect.infra.exception.PessoaFisicaException;
 import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
+import com.adatech.cielo.prospect.servico.AmazonSQSService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,13 +26,15 @@ class PessoaFisicaServiceTest {
 
     private PessoaFisicaService service;
 
+    private AmazonSQSService amazonService;
+
     @Mock
     private DadosCadastroClienteQueue dadosQueue;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        service = new PessoaFisicaService(repository, dadosQueue);
+        service = new PessoaFisicaService(repository, dadosQueue, amazonService);
     }
 
     @Test

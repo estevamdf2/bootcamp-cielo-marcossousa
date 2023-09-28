@@ -4,7 +4,7 @@ import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
 import com.adatech.cielo.prospect.domain.cliente.PessoaFisica;
 import com.adatech.cielo.prospect.infra.exception.PessoaFisicaException;
 import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.adatech.cielo.prospect.servico.AmazonSQSService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,18 +16,32 @@ public class PessoaFisicaService {
     private final PessoaFisicaRepository repository;
     private DadosCadastroClienteQueue dadosQueue;
 
-    public PessoaFisicaService(PessoaFisicaRepository repository, DadosCadastroClienteQueue dadosQueue) {
+    private final AmazonSQSService amazonService;
+
+    public PessoaFisicaService(PessoaFisicaRepository repository, DadosCadastroClienteQueue dadosQueue, AmazonSQSService service) {
         this.repository = repository;
         this.dadosQueue = dadosQueue;
+        this.amazonService = service;
     }
 
     public PessoaFisica cadastrar(CadastroPessoaFisica dados){
         var pessoaFisica = new PessoaFisica(dados);
         validaSePessoaFisicaEhCadastrada(dados.cpf());
         pessoaFisica = repository.save(pessoaFisica);
-        dadosQueue.enqueue(new DadosCadastroCliente(pessoaFisica));
-        System.out.println("Cliente incluído na fila para atendimento "+dadosQueue.toString());
+        var dadosCliente = new DadosCadastroCliente(pessoaFisica);
+        enviarClienteFilaAplicacao(dadosCliente);
+        enviarClienteAmazonSQS(dadosCliente);
         return pessoaFisica;
+    }
+
+    private void enviarClienteAmazonSQS(DadosCadastroCliente dadosCliente) {
+        this.amazonService.enviarMensagem(dadosCliente);
+        System.out.println("Cliente enviado para AWS SQS "+ dadosCliente.toString());
+    }
+
+    private void enviarClienteFilaAplicacao(DadosCadastroCliente dadosCliente) {
+        dadosQueue.enqueue(dadosCliente);
+        System.out.println("Cliente incluído na fila para atendimento: "+dadosQueue.toString());
     }
 
     public void validaSePessoaFisicaEhCadastrada(String cpf){
@@ -52,7 +66,9 @@ public class PessoaFisicaService {
         var pessoaFisica = this.repository.getReferenceByCpf(dados.cpf());
         pessoaFisicaNaoDeveSerCadastrada(dados.cpf());
         pessoaFisica.atualizarPessoaFisica(dados, pessoaFisica);
-        dadosQueue.atualizar(new DadosCadastroCliente(pessoaFisica));
+        var dadosCliente = new DadosCadastroCliente(pessoaFisica);
+        dadosQueue.atualizar(dadosCliente);
+        this.amazonService.enviarMensagem(dadosCliente);
         return this.repository.save(pessoaFisica);
     }
 

@@ -2,20 +2,13 @@ package com.adatech.cielo.prospect.queue;
 
 import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
 import com.adatech.cielo.prospect.domain.cliente.PessoaFisica;
-import com.adatech.cielo.prospect.domain.cliente.PessoaJuridica;
 import com.adatech.cielo.prospect.domain.cliente.pessoafisica.CadastroPessoaFisica;
-import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.PessoaJuridicaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.LinkedList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class DadosCadastroClienteQueueTest {
 
@@ -35,7 +28,7 @@ class DadosCadastroClienteQueueTest {
 
         assertEquals(1, queue.size());
         assertEquals(dados, result);
-        assertEquals(dados.cpf(), result.cpf());
+        assertEquals(dados.getCpf(), result.getCpf());
 
     }
 
@@ -66,8 +59,8 @@ class DadosCadastroClienteQueueTest {
         DadosCadastroCliente resultado = queue.front();
         assertEquals(dados, resultado);
         //Validando alguns campos
-        assertEquals(dados.cpf(), resultado.cpf());
-        assertEquals(dados.nomePessoa(), resultado.nomePessoa());
+        assertEquals(dados.getCpf(), resultado.getCpf());
+        assertEquals(dados.getNomePessoa(), resultado.getNomePessoa());
     }
 
     @Test
@@ -81,8 +74,8 @@ class DadosCadastroClienteQueueTest {
         DadosCadastroCliente resultado = queue.rear();
         assertEquals(dados2, resultado);
         //Validando alguns campos
-        assertEquals(dados2.cpf(), resultado.cpf());
-        assertEquals(dados2.nomePessoa(), resultado.nomePessoa());
+        assertEquals(dados2.getCpf(), resultado.getCpf());
+        assertEquals(dados2.getNomePessoa(), resultado.getNomePessoa());
     }
 
     @Test
@@ -115,8 +108,8 @@ class DadosCadastroClienteQueueTest {
         var resultado = queue.rear();
         assertEquals(dados, resultado);
         //Validando alguns campos
-        assertEquals(dados.cpf(), resultado.cpf());
-        assertEquals(dados.nomePessoa(), resultado.nomePessoa());
+        assertEquals(dados.getCpf(), resultado.getCpf());
+        assertEquals(dados.getNomePessoa(), resultado.getNomePessoa());
 
     }
 

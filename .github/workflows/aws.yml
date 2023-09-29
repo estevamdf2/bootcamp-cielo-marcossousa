@@ -66,17 +66,14 @@ jobs:
       with:
         mask-password: true
 
-    - name: um teste
-      #uses: actions/checkout@v4
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@v2
+    - name: Setup java 17
+      uses: actions/setup-java@v1
       with:
-        java-version: '17'
-        distribution: 'temurin'
-    - run: mvn --batch-mode --update-snapshots verify
-    - run: mkdir staging && cp target/*.jar staging
-      with:
-        name: Package
-        path: staging
+        java-version: 17
+
+    - name: Build project with Maven
+      run: mvn -B package --file pom.xml
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image

@@ -4,6 +4,7 @@ import com.adatech.cielo.prospect.domain.login.AutenticacaoRequest;
 import com.adatech.cielo.prospect.domain.login.AutenticacaoResponse;
 import com.adatech.cielo.prospect.domain.usuario.UsuarioRepository;
 import com.adatech.cielo.prospect.domain.login.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +23,7 @@ public class AutenticacaoRestController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    @Operation(summary = "Efetua login na aplicação.", tags = {"autenticação"})
     @PostMapping
     public AutenticacaoResponse login(@RequestBody AutenticacaoRequest autenticacao){
         Authentication authentication = new UsernamePasswordAuthenticationToken(autenticacao.username(), autenticacao.password());

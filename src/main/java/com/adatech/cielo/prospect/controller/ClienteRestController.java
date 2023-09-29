@@ -4,6 +4,7 @@ import com.adatech.cielo.prospect.domain.cliente.ClienteService;
 import com.adatech.cielo.prospect.domain.cliente.DadosCadastroCliente;
 import com.adatech.cielo.prospect.servico.AmazonSQSService;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,24 +24,33 @@ public class ClienteRestController {
         this.amazonService = amazonService;
     }
 
-    @Operation(summary = "Lista os clientes cadastrados na plataforma aguardando atendimento.", tags = {"clientes fila atendimento"})
+    @Operation(summary = "Lista os clientes cadastrados na plataforma aguardando atendimento.", tags = {"prospecção"})
     @GetMapping
-    public List<DadosCadastroCliente> listar(){
-        return this.service.listarClientes();
+    public ResponseEntity listar(){
+        var clientes = this.service.listarClientes();
+        if(clientes.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(clientes);
     }
 
-    @Operation(summary = "Retira o primeiro cliente cadastrado na plataforma para ser atendido.", tags = {"clientes fila atendimento"})
+    @Operation(summary = "Retira o primeiro cliente cadastrado na plataforma para ser atendido.", tags = {"prospecção"})
     @GetMapping("/retirar")
     public DadosCadastroCliente retirarCliente(){
         return this.service.retirarCliente();
     }
 
-    @Operation(summary = "Lista os clientes cadastrados na Amazon SQS aguardando atendimento.", tags = {"clientes fila atendimento"})
+    @Operation(summary = "Lista os clientes cadastrados na Amazon SQS aguardando atendimento.", tags = {"prospecção"})
     @GetMapping("/aws")
-    public List<DadosCadastroCliente> listarClientesAWS(){
-        return this.amazonService.listarClientes();}
+    public ResponseEntity listarClientesAWS(){
+        var clientes = this.amazonService.listarClientes();
+        if(clientes.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(clientes);
+    }
 
-    @Operation(summary = "Retira o primeiro cliente cadastrado na Amazon SQS para ser atendido.", tags = {"clientes fila atendimento"})
+    @Operation(summary = "Retira o primeiro cliente cadastrado na Amazon SQS para ser atendido.", tags = {"prospecção"})
     @GetMapping("/aws/retirar")
     public DadosCadastroCliente retirarClienteAWS() { return this.amazonService.retirarCliente();}
 }

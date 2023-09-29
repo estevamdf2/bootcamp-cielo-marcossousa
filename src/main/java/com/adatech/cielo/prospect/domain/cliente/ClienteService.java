@@ -29,6 +29,8 @@ public class ClienteService {
         while (!filaCopia.isEmpty()) {
             this.dadosQueue.enqueue(filaCopia.dequeue());
         }
+
+
         return clientes;
     }
 

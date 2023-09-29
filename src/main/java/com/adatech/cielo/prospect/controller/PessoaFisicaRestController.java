@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/clientes/pessoasfisicas")
+@RequestMapping("/clientes/pf")
 public class PessoaFisicaRestController {
 
     private final PessoaFisicaService service;
@@ -23,36 +23,39 @@ public class PessoaFisicaRestController {
     public PessoaFisicaRestController(PessoaFisicaService service) {
         this.service = service;
     }
-    @Operation(summary = "Realiza o cadastro de uma pessoa física", tags = {"/clientes/pessoasfisicas"})
+    @Operation(summary = "Realiza o cadastro de uma pessoa física", tags = {"clientes"})
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid CadastroPessoaFisica dados, UriComponentsBuilder uriBuilder){
         var pessoaFisica = this.service.cadastrar(dados);
-        var uri = uriBuilder.path("/clientes/pessoasjuridicas/{id}").buildAndExpand(pessoaFisica.getId()).toUri();
+        var uri = uriBuilder.path("/clientes/pf/{id}").buildAndExpand(pessoaFisica.getId()).toUri();
         return ResponseEntity.created(uri).body(new ListagemPessoaFisica(pessoaFisica));
     }
 
-    @Operation(summary = "Lista todas as pessoas físicas cadastradas", tags = {"/clientes/pessoasfisicas"})
+    @Operation(summary = "Lista todas as pessoas físicas cadastradas", tags = {"clientes"})
     @GetMapping
-    public List<ListagemPessoaFisica> listarPessoas(){
+    public ResponseEntity listarPessoas(){
         var pessoas = this.service.listar();
-        return ResponseEntity.ok(pessoas).getBody();
+        if(pessoas.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(pessoas);
     }
 
-    @Operation(summary = "Atualiza os dados de uma pessoa física", tags = {"/clientes/pessoasfisicas"})
+    @Operation(summary = "Atualiza os dados de uma pessoa física", tags = {"clientes"})
     @PutMapping
     public ListagemPessoaFisica atualizar(@RequestBody @Valid CadastroPessoaFisica dados){
         var pessoaFisica = this.service.atualizar(dados);
         return new ListagemPessoaFisica(pessoaFisica);
     }
 
-    @Operation(summary = "Detalha os dados de uma pessoa física cadastrada", tags = {"/clientes/pessoasfisicas"})
+    @Operation(summary = "Detalha os dados de uma pessoa física cadastrada", tags = {"clientes"})
     @GetMapping("/{uuid}")
     public ResponseEntity detalharPessoa(@PathVariable UUID uuid){
         var pessoa = this.service.detalharPessoa(uuid);
         return ResponseEntity.ok(pessoa);
     }
 
-    @Operation(summary = "Realiza a exclusão de uma pessoa física cadastrada", tags = {"/clientes/pessoasfisicas"})
+    @Operation(summary = "Realiza a exclusão de uma pessoa física cadastrada", tags = {"clientes"})
     @DeleteMapping("{uuid}")
     @Transactional
     public ResponseEntity excluir(@PathVariable UUID uuid){

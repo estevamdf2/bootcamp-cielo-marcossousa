@@ -6,6 +6,7 @@ import com.adatech.cielo.prospect.domain.cliente.pessoajuridica.PessoaJuridicaSe
 
 import com.adatech.cielo.prospect.queue.DadosCadastroClienteQueue;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/clientes/pessoasjuridicas")
-
 public class PessoaJuridicaRestController {
 
     private final PessoaJuridicaService service;

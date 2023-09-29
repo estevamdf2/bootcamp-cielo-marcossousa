@@ -73,7 +73,7 @@ jobs:
         java-version: 17
 
     - name: Build project with Maven
-      run: mvn -B package --file pom.xml -DskipTest
+      run: mvn -DskipTests package
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image

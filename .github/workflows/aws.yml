@@ -38,7 +38,7 @@ env:
   ECS_TASK_DEFINITION: /opt/app  # set this to the path to your Amazon ECS task definition
   ECR_REGISTRY: public.ecr.aws/p1f8s2x1/                                       # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: ecs_bootcamp           # set this to the name of the container in the
-  ECR_URI: public.ecr.aws/p1f8s2x1/bootcamp-cielo
+  ECR_URI: 485110082322.dkr.ecr.us-east-1.amazonaws.com/bootcamp-cielo
                                                # containerDefinitions section of your task definition
 
 

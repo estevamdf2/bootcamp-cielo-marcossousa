@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import software.amazon.awssdk.services.sqs.model.SqsException;
 
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -33,7 +32,8 @@ public class AmazonSQSService {
     @Value("${spring.cloud.aws.credentials.secret-key}")
     private String secretKey;
 
-    private String GROUP_NAME="cielo-group";
+    @Value("${aws.queue-group-name}")
+    private String groupName;
 
     private final int NOVO_TEMPO_VISIBILIDADE=3600;
 
@@ -63,8 +63,8 @@ public class AmazonSQSService {
         try {
             SendMessageRequest sendMsgRequest = new SendMessageRequest()
                     .withQueueUrl(queueUrl)
-                    .withMessageGroupId(GROUP_NAME)
-                    .withMessageDeduplicationId(GROUP_NAME)
+                    .withMessageGroupId(groupName)
+                    .withMessageDeduplicationId(groupName)
                     .withMessageBody(dados.toJson());
 
             sqsClient.sendMessage(sendMsgRequest);

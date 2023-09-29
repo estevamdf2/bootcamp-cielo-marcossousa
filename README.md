@@ -14,8 +14,6 @@ Repositório do candidato Marcos Sousa cujo objetivo e apresentar aos avaliadore
 
 ## Aplicação
 
-//todo inserir as variaveis que devem ser trocadas no application.properties com a fila SQS DA APLICAÇÃO. 
-
 A aplicação conta com as principais tecnologias:
 * Java 17
 * Spring boot: 3.1.4
@@ -107,6 +105,19 @@ Agora e fechar a modal e realizar as requisições na API.
 Após realizar os passos descritos no tópico [Autenticação](#autenticação). Escolha um dos endpoints e faça a chamada.
 
 ![Chamada ao endpoint](docs/imagens/15-chamada-list-pessoas-juridicas.PNG)
+
+#### Amazon SQS
+Para que você tenha êxito nas requisições ao serviço da AWS faz-se necessário realizar os seguintes ajustes no arquivo `application.properties`:
+
+```properties
+##############  Dados da Amazon ########################
+spring.cloud.aws.credentials.access-key=<access-key-seu-usuario>
+spring.cloud.aws.credentials.secret-key=<secret-key-seu-usuario>
+spring.cloud.aws.sqs.endpoint=<endereco-sua-fila>
+aws.queue-name=<nome-fila>
+aws.queue-group-name=<nome-grupo>
+```
+
 
 ## Desafios
 

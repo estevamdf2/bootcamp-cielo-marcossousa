@@ -40,7 +40,7 @@ public class SpringDocConfigurations {
                                 .email("backend@adatech.com"))
                         .license(new License()
                                 .name("Apache 2.0")
-                                .url("http://empresa/api/licenca")));
+                                .url("https://www.linkedin.com/in/marcos-estevam-de-sousa-94369926/")));
     }
 
 }

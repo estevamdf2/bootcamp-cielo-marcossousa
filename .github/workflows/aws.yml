@@ -67,6 +67,10 @@ jobs:
         mask-password: true
 
     - name: build da aplicacao com Maven
+      uses: aws-actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribuition: 'temurin'
       run: mvn -B package --file pom.xml
 
     - name: Build, tag, and push image to Amazon ECR

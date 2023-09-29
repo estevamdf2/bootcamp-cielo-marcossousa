@@ -64,7 +64,7 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       with:
-        maskDockerPassword: 'registries'
+        mask-password: true
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image

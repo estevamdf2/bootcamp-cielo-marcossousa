@@ -158,16 +158,32 @@ _c) planeje as atividades técnicas para o desenvolvimento da solução;_
 _d) implemente a solução._
 
 
-A aplicação atualmente encontra-se pública, ou seja, qualquer pessoa que tenha acesso a URL da API conseguirá realizar
-requisições para Ela. Isto é um ponto critico pois desta forma podemos expor dados sigilosos, sensíveis da aplicação e dos clientes mantidos pela aplicação.
+A API da aplicação atualmente encontra-se pública, ou seja, qualquer pessoa que tenha acesso a URL da solução conseguirá realizar
+requisições para ela. Isto é um ponto crítico pois desta forma podemos expor dados sigilosos, sensíveis da aplicação e dos clientes.
 
-O Spring conta com um módulo que trata do controle de acesso e autenticação a aplicação. O modulo Spring Security conta com os seguintes recursos:
+O Spring conta com um módulo que trata do controle de acesso e autenticação à aplicação. O modulo **Spring Security** conta com os seguintes recursos:
 * Suporte e extensibilidade para autenticação e autorização;
 * Proteção contra ataques como sessão fixa, clickjacking, cross site request forgery, etc;
 * Integração a servlet API;
 * Dentre outros;
 
 #### Planejamento das atividades
+
+Para a implementação do módulo de segurança. Seguiremos as seguintes etapas:
+
+* [Inclusão de dependências](#inclusão-de-dependências)
+* [Classes para ativar as configurações de segurança](#classes-para-ativar-as-configurações-de-segurança)
+* [Criar entidade para armazenar os dados de usuário](#criar-entidade-para-armazenar-os-dados-de-usuário)
+* [Configuração para o serviço de autenticação](#configuração-para-o-serviço-de-autenticação)
+* [Ligando as classes de serviço as configurações de segurança](#ligando-as-classe-de-serviço-as-configurações-de-segurança)
+* [Autenticação com JWT](#autenticação-com-jwt)
+* * Gere um JWT secret
+* * Crie a classe JWTService
+* * Crie a classe JWTAuthFilter
+* Adicionar as configurações do JWT ao SpringSecurity
+
+
+##### Inclusão de dependências
 Desta forma temos que inserir as seguintes bibliotecas ao projeto:
 ```xml
 <dependency>
@@ -180,14 +196,219 @@ Desta forma temos que inserir as seguintes bibliotecas ao projeto:
     <scope>test</scope>
 </dependency>
 ```
-
 A segunda lib será utilizada para testes da aplicação.
 
 Como a aplicação se comportara no modo _STATELESS_ onde a API não armazenará o estado da sessão. Com isso em cada requisição temos que confirmar qual usuário está
 autenticado a fim de verificar se ele terá permissões para obter os recursos.
-Para que não se envie os dados de login e senha em todas as requisições utilizaremos o JSON Web Token.
+Para que não se envie os dados de login e senha em todas as requisições utilizaremos o JSON Web Token. Veremos no tópico [Autenticação com JWT](#autenticação-com-jwt)
 
-Quando o usuário se autenticar ele receberá um token de autorização e o utilizara nas chamadas aos endpoints. Para isso, faremos o uso desta outra biblioteca
+##### Classes para ativar as configurações de segurança
+
+##### SecurityConfig
+O Spring Security 6.1 usa Lambda DSL - permite melhor legibilidade do que usando concatenação com and(). Esse recurso existe desde a versão 5.2 e é uma preparação para a versão 7.
+
+Defina um bean para a configuração das autorizações de segurança. Veremos abaixo as principais configurações desta classe
+
+```java
+//Habilitando o controle de autorização aos métodos e classes.
+@EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final AuthenticationProvider authenticationProvider;
+    private final JwtAuthFilter jwtAuthFilter;
+@Bean
+    public SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .csrf(csrf -> csrf.disable()) //Desabilitando o csrf
+                //Definindo a politica de sessão como STATELESS
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //Liberando o acesso ao banco H2.
+                .headers(header -> header.frameOptions(frame -> frame.disable()))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(PathRequest.toH2Console()).permitAll()
+                                // Liberando o acesso sem autenticação ao endpoint /login e as páginas da documentação com Swagger
+                                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                                .anyRequest().authenticated()
+                )
+                .authenticationProvider(this.authenticationProvider)
+                .addFilterBefore(this.jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+```
+##### Criar entidade para armazenar os dados de usuário
+
+Precisamos criar uma classe para representar a nossa entidade Usuario. Ela implementará a interface `org.springframework.security.core.userdetails.UserDetails`. Segue abaixo a classe:
+
+###### Entidade
+```java 
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@Log4j2
+public class Usuario implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    private String username;
+    @Email
+    private String email;
+    private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
+    private boolean accountExpired;
+    private boolean accountLocked;
+    private boolean credentialsExpired;
+    private boolean disabled;
+
+    public Usuario(String username, String email, String password, Role role) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    /**Metodos implementados pelo UserDetails 
+     * Com elas você pode definir algumas propriedades como
+     * se a conta já está expirada, se a credencial expirará etc**/
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new ArrayList<>(Collections.singletonList(new SimpleGrantedAuthority("ROLE_" +this.role.name())));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return !this.accountExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !this.accountLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return !this.credentialsExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return !this.disabled;
+    }
+}
+```
+
+###### Repositório
+Criaremos um repository para e implementaremos a seguinte interface
+
+```java
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    Optional<Usuario> findByUsername(String username);
+}
+```
+###### Serviço
+Criaremos uma clase de serviço que implementará a seguinte interface `org.springframework.security.core.userdetails.UserDetailsService`
+```java
+@Service
+@RequiredArgsConstructor
+public class AutenticacaoService implements UserDetailsService {
+
+    private final UsuarioRepository usuarioRepository;
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.usuarioRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Usuário nao encontrado"));
+    }
+}
+```
+##### Configuração para o serviço de autenticação
+
+Para realizar a autenticação precisamos criar uma outra classe de configuração para definir três beans
+* Password encoder
+* Authentication provider
+* Autentication manager
+
+```java
+@Configuration
+@RequiredArgsConstructor
+public class AutenticacaoConfig {
+
+    private final AutenticacaoService autenticacaoService;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(this.autenticacaoService);
+        provider.setPasswordEncoder(this.passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+}
+```
+
+##### Ligando as classes de serviço as configurações de segurança
+
+Voltaremos agora a classe **SecurityConfig** para incluir as configurações de segurança criadas na etapa anterior.
+
+```java 
+//Habilitando o controle de autorização aos métodos e classes.
+@EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final AuthenticationProvider authenticationProvider;
+    private final JwtAuthFilter jwtAuthFilter;
+@Bean
+    public SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .csrf(csrf -> csrf.disable()) //Desabilitando o csrf
+                //Definindo a politica de sessão como STATELESS
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //Liberando o acesso ao banco H2.
+                .headers(header -> header.frameOptions(frame -> frame.disable()))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(PathRequest.toH2Console()).permitAll()
+                                // Liberando o acesso sem autenticação ao endpoint /login e as páginas da documentação com Swagger
+                                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                                .anyRequest().authenticated()
+                )
+                // Adicionando as configurações da classe de autenticação ao Spring Security
+                .authenticationProvider(this.authenticationProvider)
+                .addFilterBefore(this.jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+```
+#### Autenticação com JWT
+
+O JWT é um sistema de transferência de dados que pode ser enviado via URL, POST ou em um cabeçalho HTTP(header) de maneira "segura",
+essa informação é assinada digitalmente, por exemplo com o algoritmo HMAC, ou um par de chaves pública/privada usando RSA.
+
+Para utiliza-lo no projeto vamos adicionar as seguintes dependências:
 
 ```xml
 <dependency>
@@ -208,6 +429,23 @@ Quando o usuário se autenticar ele receberá um token de autorização e o util
     <scope>runtime</scope>
 </dependency>
 ```
+
+Agora vamos gerar um token para ser utilizado pela aplicação. Caso tenha o Node instalado você pode executar o seguinte comando:
+
+```shell 
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Uma outra alternativa é utilizar algum site que use o bcrypt para gerar um hash. No meu caso eu utilizei o site [online Bcrypt](https://www.javainuse.com/onlineBcrypt)
+
+![Site bcrypt](docs/imagens/6-site-bcrypt.PNG "Site online bcrypt")
+
+* * Crie a classe JWTService
+* * Crie a classe JWTAuthFilter
+* Adicionar as configurações do JWT ao SpringSecurity
+#### Crie a classe JWTService
+
+
 
 - falar sobre o SecurityConfig
 Descrever os passos realizados.
@@ -264,5 +502,6 @@ private SecurityScheme createAPIKeyScheme() {
 
 Agora você terá a opção de se autenticar via swagger, obter o token e usar o token 
 
-
+aqui para habilitar autenticação no swagger.
+https://www.baeldung.com/spring-boot-swagger-jwt
 

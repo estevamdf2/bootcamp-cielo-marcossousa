@@ -66,6 +66,9 @@ jobs:
       with:
         mask-password: true
 
+    - name: build da aplicacao com Maven
+      run: mvn -B package --file pom.xml
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
               

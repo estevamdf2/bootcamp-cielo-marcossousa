@@ -27,7 +27,7 @@ public non-sealed class PessoaFisica extends Cliente{
     private Long id;
 
     @NotNull
-    @Size(max = 50)
+    @Size(max = 50,message = "tamanho deve ser entre 0 e 50")
     private String nomePessoa;
 
     @NotNull

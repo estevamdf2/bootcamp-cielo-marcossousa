@@ -71,6 +71,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 17
+        node-version: 16
 
     - name: Build project with Maven
       run: mvn -DskipTests package

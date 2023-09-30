@@ -3,6 +3,7 @@ package com.adatech.cielo.prospect.infra.exception;
 import com.adatech.cielo.prospect.domain.cliente.ValidacaoException;
 import com.amazonaws.services.sqs.model.AmazonSQSException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,12 +39,12 @@ public class TratadorDeErros {
 
     @ExceptionHandler(PessoaJuridicaException.class)
     public ResponseEntity<String> handlePessoaJuridicaException(PessoaJuridicaException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(PessoaFisicaException.class)
     public ResponseEntity<String> handlePessoaFisicaException(PessoaFisicaException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
